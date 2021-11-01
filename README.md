@@ -8,7 +8,7 @@ Calculations can be done for one set of PCR primers and product.
 
 **Format** <br>
 **Product.txt** <br>
-TAGACGTAGCTAGTCATGCATGTGACTGATCGGGATCACACTCAGCTCCCTACGCT <br>
+TAGACGTAGCTAGTCATGCATGTGACTGATCGGGATCACACTCAGCTCCCTACGCT <br> #a sample PCR product sequence
 ** There should be no other text in the .txt file. Simply copy and paste the expected PCR product sequence into a .txt file.
 
 # Output file
