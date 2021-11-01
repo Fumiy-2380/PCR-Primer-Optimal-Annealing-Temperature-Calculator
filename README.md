@@ -3,19 +3,13 @@ Based on the papers "_Optimization of the annealing temperature for DNA amplific
 
 # Input file - Primer Sequences and Format
 
-Copy & paste the primer sequences in a .txt file, and the predicted product sequence in a separate .txt file. When running the file, it will first ask to input the primer .txt file, then the product .txt file. Using equations and values from the papers listed above, the optimal annealing temperature for the primers will be calculated. 
-
-Calculations can be done for one set of forward & reverse primers at a time. <br>
+Using equations and values from the papers listed above, the optimal annealing temperature for the primers will be calculated. 
+Calculations can be done for one set of PCR primers and product. 
 
 **Format** <br>
-**Primers.txt** <br>
-TAGACGTAGCTAGTC #Sample forward primer in .txt file <br>
-AGCGTAGGGAGCTGA #Sample reverse primer in .txt file <br>
-** There should be no other text in the .txt file 
-
 **Product.txt** <br>
 TAGACGTAGCTAGTCATGCATGTGACTGATCGGGATCACACTCAGCTCCCTACGCT <br>
-** There should be no other text in the .txt file
+** There should be no other text in the .txt file. Simply copy and paste the expected PCR product sequence into a .txt file.
 
 # Output file
 Outputs an excel sheet with the primer ID, sequence and the optimal annealing temperature in <sup>o</sup>Celsius. 
