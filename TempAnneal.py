@@ -18,8 +18,6 @@ with open(primer_seq, "r") as primer_intro:
 with open(product_seq, "r") as product_intro:
     product = product_intro.read()
 
-#print(primers)
-
 #define variables:
 dH = float #kcal 
 dS = float #cal/K
