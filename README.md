@@ -8,7 +8,7 @@ Copy & paste the primer sequences in a .txt file, and the predicted product sequ
 Calculations can be done for one set of forward & reverse primers at a time. 
 
 # Output file
-Outputs an excel sheet with the primer ID, sequence and the optimal annealing temperature in <sup>o</sup>C. 
+Outputs an excel sheet with the primer ID, sequence and the optimal annealing temperature in <sup>o</sup>Celsius. 
 
 # Dependencies 
 1. tkinter
