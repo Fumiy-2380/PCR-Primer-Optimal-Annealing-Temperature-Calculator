@@ -1,33 +1,25 @@
 #Import Modules
 import tkinter as tk
 from tkinter import filedialog
-import xlsxwriter as xls
 import math
-workbook = xls.Workbook("Primer-Anneal_Results.xlsx")
-worksheet = workbook.add_worksheet()
-
 root = tk.Tk()
 root.withdraw()
 
 #Import primer sequences and the product sequence
-#primer_seq = filedialog.askopenfilename()
 F_primer = input("Input forward primer sequence: ")
 R_primer = input("Input reverse primer sequence: ")
+print("Choose .txt file from python pop-up that contains the PCR product sequence.")
 product_seq = filedialog.askopenfilename() 
 
-"""
-with open(primer_seq, "r") as primer_intro:
-    primers = [line.strip("\n") for line in primer_intro]
-"""
 with open(product_seq, "r") as product_intro:
     product = product_intro.read()
 
 #define variables:
-dH = float #kcal 
-dS = float #cal/K
-R = 1.987E-3 #kcal/(C*mol)
-c = 250 #M (picoMolar)
-K = 50 #M (milliMolar)
+dH = float #kcal - enthalpy of annealing 
+dS = float #cal/K - entropy of annealing 
+R = 1.987E-3 #kcal/(C*mol) - molar gas constant
+c = 250 #M (picoMolar) - total molar concentration of the annealing oligonucleotides (when oligonucleotides are not self-complementary) - empirically determined value
+K = 50 #M (milliMolar) - standard K+ concentration in PCR buffer (working concentration)
 l = len(product) #Length of product in bp
 
 #Table - Nearest-neighbor thermodynamics [dH (kcal), dS (cal/K), dG (kcal)]
@@ -42,7 +34,33 @@ CCorGG = [11.0, 26.6E-3, 3.1]
 CG = [11.9, 27.8E-3, 3.6]
 GC = [11.1, 26.7E-3, 3.1]
 
-#Calculate dH and dS 
+#Define Functions 
+#Make complementary strand 
+def complementer(sequence):
+    comp_index = 0
+    sort_lst = []
+    complement = []
+    for base in sequence:
+        sort_lst.append([comp_index, base])
+        comp_index += 1
+    sorted_comp_lst = sorted(sort_lst, reverse=True)
+    index = 0 
+    while index < (len(sorted_comp_lst)):
+        if sorted_comp_lst[index][1] == "A":
+            complement.append("T")
+            index += 1
+        elif sorted_comp_lst[index][1] == "T":
+            complement.append("A")
+            index += 1
+        elif sorted_comp_lst[index][1] == "C":
+            complement.append("G")
+            index += 1
+        elif sorted_comp_lst[index][1] == "G":
+            complement.append("C")
+            index += 1        
+    return str(''.join(complement))
+
+#Calculate dH and dS - pick sequences from table and sum dH/dS values from the table for the primer sequence
 def dH_dS_finder(primer_seq):
     dH = 0
     dS = 0
@@ -97,28 +115,44 @@ def GC_Content(product_seq):
         if base == "G" or base == "C":
             GC_content += 1
     return GC_content/len(product_seq)*100
-        
 
-#Run calculations for each strand   
+#Run calculations for each strand | dHF1 = dH of F_primer sequence, dHFC1 = dH of F_primer complementary sequence (annealing target)
+F_comp = complementer(F_primer)
+R_comp = complementer(R_primer)  
+dHF1, dSF1 = dH_dS_finder(F_primer)
+dHR1, dSR1 = dH_dS_finder(R_primer)
+if len(R_primer) % 2 == 0:
+    dHFC1, dSFC1 = dH_dS_finder(F_comp[1:])
+    dHRC1, dSRC1 = dH_dS_finder(R_comp[1:])
+else:
+    dHFC1, dSFC1 = dH_dS_finder(F_comp)
+    dHRC1, dSRC1 = dH_dS_finder(R_comp)
+
+dHF = dHF1 + dHFC1
+dSF = dSF1 + dSFC1 
+dHR = dHR1 + dHRC1 
+dSR = dSR1 + dSRC1 
+
 Tm_product = 0.41*(GC_Content(product))+16.6*math.log(K,10)-675/l
-#primer_number = 1
-#or seq in primers:
-def Ta_Calculator(primer):
-    primer_number = 1
-    dH, dS = dH_dS_finder(primer)
+
+#Calculate Tm of primers 
+def Tm_calculator(dH, dS): 
     Tm_primer = dH/(dS+R*math.log(c/4))-273.15+16.6*math.log(K,10)
-    Opt_Ta = 0.3*Tm_primer+0.7*Tm_product-14.9
-    primer_number += 1
+    return Tm_primer
+
+Tm_primer_F = Tm_calculator(dHF, dSF)
+Tm_primer_R = Tm_calculator(dHR, dSR)
+
+#Calculate Optimal Annealing Temperature
+def Ta_Calculator(primer):
+    Opt_Ta = 0.3*primer+0.7*Tm_product-14.9
     return Opt_Ta
- 
-#Input results into excel sheet
-worksheet.write(1,0,"F. Primer")
-worksheet.write(2,0,"R. Primer")
-worksheet.write(0,1,"Opt Ta")
-worksheet.write(0,2,"Primer Sequence")
-worksheet.write(1,1,Ta_Calculator(F_primer))
-worksheet.write(2,1,Ta_Calculator(R_primer))
-worksheet.write(1,2,F_primer)
-worksheet.write(2,2,R_primer)
-workbook.close()
+#Use least stable primer melting temperature
+if Tm_primer_F >= Tm_primer_R:
+    Opt_Ta = Ta_Calculator(Tm_primer_R)
+else: 
+    Opt_Ta = Ta_Calculator(Tm_primer_F)
+
+#Output
+print("The optimal annealing temperature for this primer set is " + str(Opt_Ta) + " degrees celsius.")
 print("Analysis complete.")
